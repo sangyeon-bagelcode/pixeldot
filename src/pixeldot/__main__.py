@@ -19,7 +19,7 @@ PLATFORMS = {
     },
     "codex": {
         "paths": [
-            ".agents/skills/pixel-art/SKILL.md",
+            ".codex/skills/pixel-art/SKILL.md",
             "AGENTS.md",
         ],
     },
@@ -105,7 +105,7 @@ def setup(force: bool = False) -> None:
 
     # Codex (OpenAI): skill directory + AGENTS.md
     written += _write_file(
-        Path(".agents/skills/pixel-art/SKILL.md"),
+        Path(".codex/skills/pixel-art/SKILL.md"),
         _codex_skill_content(SKILL_CONTENT),
         force,
     )
