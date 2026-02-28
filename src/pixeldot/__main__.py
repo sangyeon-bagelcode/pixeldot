@@ -52,7 +52,9 @@ def _codex_skill_content(skill: str) -> str:
         "---\n"
         "name: pixel-art\n"
         "description: Use when creating pixel art, sprites, or dot images. "
-        "Always use pixeldot package.\n"
+        "Always use pixeldot package. Never write raw RGBA tuple arrays.\n"
+        "metadata:\n"
+        "  short-description: Create pixel art sprites with pixeldot\n"
         "---\n\n"
         + skill
     )
