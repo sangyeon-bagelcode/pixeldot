@@ -74,6 +74,46 @@ px.AutoPalette.from_image("input.png")                 # PNG -> (palette, rows)
 4. Use `auto_shades()` for consistent highlight/shadow generation.
 5. Use `get_preset_palette()` for quick retro styles.
 
+## Batch Rendering
+
+For multiple sprites, create a YAML spec file (`spec.yaml`):
+
+```yaml
+palette:
+  ".": transparent
+  K: "#000000"
+  h: "#C8B4DC"
+  b: "#8C64B4"
+
+sprites:
+  player_idle:
+    block: |
+      ..KK..
+      .KhhK.
+      KhbbhK
+    save: assets/player_idle.png
+    preview: assets/player_idle_10x.png
+
+  player_walk:
+    block: |
+      .KK...
+      KhhK..
+      KhbbhK
+    save: assets/player_walk.png
+
+  walk_strip:
+    type: strip
+    frames: [player_idle, player_walk]
+    save: assets/walk_strip.png
+```
+
+Then run: `python -m pixeldot render spec.yaml`
+
+Options: `--dry-run` (parse only), `--only name1,name2` (subset).
+
+Supported types: `block` (default), `strip`, `grid`, `tilemap`, `layers`.
+Sprites can reference each other by name. Effects: `outline: true`, `shadow: true`.
+
 ## Palette Convention
 
 `.`=transparent `K`=black `W`=white. Lowercase by role: `h`=highlight `b`=body `d`=dark `s`=secondary. Or by color initial: `r`=red `g`=green.

@@ -93,6 +93,9 @@ from .extended_palette import MultiCharPalette, AutoPalette
 # io.py
 from .io import load, save, save_preview
 
+# spec.py
+from .spec import SpecError, Spec, load_spec, render_spec
+
 # fast_sprite.py (optional — requires numpy)
 try:
     from .fast_sprite import FastSprite
@@ -131,6 +134,8 @@ __all__ = [
     "MultiCharPalette", "AutoPalette",
     # io
     "load", "save", "save_preview",
+    # spec
+    "SpecError", "Spec", "load_spec", "render_spec",
     # fast (optional)
     "FastSprite",
 ]

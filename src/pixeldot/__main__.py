@@ -1,4 +1,4 @@
-"""CLI entry point: python -m pixeldot setup"""
+"""CLI entry point: python -m pixeldot <command>"""
 
 from __future__ import annotations
 
@@ -18,7 +18,10 @@ PLATFORMS = {
         ],
     },
     "codex": {
-        "paths": ["AGENTS.md"],
+        "paths": [
+            ".agents/skills/pixel-art/SKILL.md",
+            "AGENTS.md",
+        ],
     },
     "gemini": {
         "paths": ["GEMINI.md"],
@@ -44,6 +47,17 @@ def _claude_md_content() -> str:
     )
 
 
+def _codex_skill_content(skill: str) -> str:
+    return (
+        "---\n"
+        "name: pixel-art\n"
+        "description: Use when creating pixel art, sprites, or dot images. "
+        "Always use pixeldot package.\n"
+        "---\n\n"
+        + skill
+    )
+
+
 def _cursor_mdc_content(skill: str) -> str:
     return (
         "---\n"
@@ -58,7 +72,7 @@ def _cursor_mdc_content(skill: str) -> str:
 def _write_file(path: Path, content: str, force: bool = False) -> bool:
     """Write file if it doesn't exist or force is True. Returns True if written."""
     if path.exists() and not force:
-        # For CLAUDE.md/AGENTS.md/GEMINI.md, append instead of skip
+        # For root-level instruction files, append instead of skip
         if path.name in ("CLAUDE.md", "AGENTS.md", "GEMINI.md"):
             existing = path.read_text()
             if "pixeldot" in existing:
@@ -87,7 +101,12 @@ def setup(force: bool = False) -> None:
     )
     written += _write_file(Path("CLAUDE.md"), _claude_md_content(), force)
 
-    # Codex (OpenAI): AGENTS.md
+    # Codex (OpenAI): skill directory + AGENTS.md
+    written += _write_file(
+        Path(".agents/skills/pixel-art/SKILL.md"),
+        _codex_skill_content(SKILL_CONTENT),
+        force,
+    )
     written += _write_file(Path("AGENTS.md"), SKILL_CONTENT, force)
 
     # Gemini CLI: GEMINI.md
@@ -114,20 +133,52 @@ def setup(force: bool = False) -> None:
     print("All AI agents in this project can now use pixeldot for pixel art.")
 
 
+def render_cmd(args: list[str]) -> None:
+    """Handle: python -m pixeldot render <spec.yaml> [--dry-run] [--only name,...]"""
+    if not args:
+        print("Usage: python -m pixeldot render <spec.yaml> [--dry-run] [--only name,...]")
+        sys.exit(1)
+
+    spec_path = args[0]
+    dry_run = "--dry-run" in args
+    only = None
+
+    for i, arg in enumerate(args):
+        if arg == "--only" and i + 1 < len(args):
+            only = set(args[i + 1].split(","))
+
+    from .spec import render_spec
+
+    results = render_spec(spec_path, only=only, dry_run=dry_run)
+
+    for name, sprite in results.items():
+        print(f"  {name}: {sprite.width}x{sprite.height}")
+
+    if dry_run:
+        print(f"\nDry run: {len(results)} sprite(s) rendered (not saved).")
+    else:
+        print(f"\nDone. {len(results)} sprite(s) rendered and saved.")
+
+
 def main() -> None:
     args = sys.argv[1:]
 
     if not args or args[0] == "help":
         print("Usage: python -m pixeldot <command>\n")
         print("Commands:")
-        print("  setup          Register pixeldot skills for all AI agent platforms")
-        print("  setup --force  Overwrite existing skill files")
-        print("  help           Show this message")
+        print("  setup                   Register pixeldot skills for all AI agent platforms")
+        print("  setup --force           Overwrite existing skill files")
+        print("  render <spec.yaml>      Render all sprites from a YAML spec file")
+        print("  render <spec.yaml> --dry-run   Parse and render without saving files")
+        print("  render <spec.yaml> --only a,b  Render only named sprites")
+        print("  help                    Show this message")
         return
 
     if args[0] == "setup":
         force = "--force" in args
         setup(force)
+    elif args[0] == "render":
+        render_cmd(args[1:])
     else:
         print(f"Unknown command: {args[0]}")
         print("Run 'python -m pixeldot help' for usage.")
